@@ -1,99 +1,142 @@
 'use client'
-
 import React from 'react';
 import Link from 'next/link';
 import { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
-import { auth } from '@/app/api/auth/route'
+import { useFormState } from 'react-dom';
+import { signup } from '@/app/actions/auth';
+import { useForm } from 'react-hook-form';
+import styles from '../styles.module.css';
 
-const SignupForm = ({ isSignedUp, setIsSignedUp }) => {
+interface Props {
+    isSignedUp : boolean,
+    setIsSignedUp : Function
+}
+
+const normalStyleBorder = '1px solid #319cd0';
+const errorStyleBorder = '1px solid #ff3131';
+
+const SignupForm = ({ isSignedUp, setIsSignedUp } : Props ) => {
     const [passwordVisible, setPasswordVisible] = useState(false);
     const [policyAgreement, setPolicyAgreement ] = useState(false);
+    const [usernameBorder, setUserNameBorder ] = useState('1px solid #319cd0');
+    const [emailBorder, setEmailBorder ] = useState('1px solid #319cd0');
+    const [passwordBorder, setPasswordBorder ] = useState('1px solid #319cd0');
 
-    const rootStyle : React.CSSProperties = {
+    const [state, action] = useFormState( signup, undefined );
+
+    const { register, handleSubmit, watch, trigger, formState: { errors } } = useForm( { mode: 'onChange' } );
+
+    const formRef = React.useRef<HTMLFormElement>(null);
+
+    const formStyle : React.CSSProperties = {
         opacity: isSignedUp ? 1 : 0,
-        transition: 'opacity 0.2s',
         pointerEvents: isSignedUp ? 'auto' : 'none',
-        zIndex: 10
-    }
-    const bgStyle : React.CSSProperties = {
-        position: 'absolute',
-        left: '0px',
-        top: '0px',
-        width: '100%',
-        height: '100%',
-        background: 'black',
-        opacity: 0.5,
-    };
-    const styleText : React.CSSProperties = {
-        display: "block",
-        position: "absolute",
-        left: "50%",
-        top: "50%",
-        transform: "translate(-50%, -50%)",
-        background: '#ffffff',
-        borderRadius: '8px',
-        padding: '30px 30px',
-        width: '300px',
-        maxHeight: '90vh'
     };
 
-    const inputStyle : React.CSSProperties = {
-        display: 'block',
-        width: '100%',
-        height: '30px',
-        fontSize: '15px',
-        border: '1px solid red',
-        borderRadius: '5px',
-        margin: '5px 0px',
-        background: '#efefef'
-    };
-
-    const iconStyle : React.CSSProperties = {
-        fontSize: '24px',
-        lineHeight : 1,
+    const formClick = () => {
+        setIsSignedUp( false );
+        formRef.current.reset();
+        setUserNameBorder( normalStyleBorder );
+        setEmailBorder( normalStyleBorder );
+        setPasswordBorder( normalStyleBorder );
+        errors.username = {};
+        errors.email = {};
+        errors.password = {};
     }
 
-    const labelStyle : React.CSSProperties = {
-    };
     return (
-    <form>
-        <div style={rootStyle}>
-            <div style={bgStyle} onClick={ () => isSignedUp ? setIsSignedUp(!isSignedUp) : false }/>
-            <div style={styleText}>
+        <form action={action} className={styles.authRoot} style={formStyle} ref={formRef}>
+            <div className={styles.authBackground} onClick={ formClick }/>
+            <div className={styles.authContents}>
                 <h2>Sign Up</h2>
-                <form>
-                    <div style={labelStyle}>
-                        <label>Username</label>
-                        <input style={inputStyle} type="username"/>
-                    </div>
-                    <div style={labelStyle}>
-                        <label>Email</label>
-                        <input style={inputStyle} type="email" placeholder="user@email.com"/>
-                    </div>
-                    <div style={labelStyle}>
-                        <label>Password</label>
-                        <div style={{
-                            position: 'relative'
-                        }}>
-                            <input style={inputStyle} 
-                                type={passwordVisible ? 'text' : 'current-password'}
-                                placeholder="Enter your password"/>
-                            <FontAwesomeIcon onClick={() => setPasswordVisible(!passwordVisible) } icon={passwordVisible ? faEyeSlash : faEye} style={{ position: 'absolute', right: '5px',top: '50%', transform: 'translateY(-50%)', cursor: 'pointer' }}/>
+                <div>
+                    <label>Username</label>
+                    <input className={styles.authInput} name="username" style={{ border: usernameBorder }} placeholder='username' {...register("username", 
+                        { 
+                            required: true, 
+                            minLength: 3, 
+                            maxLength: 20,
+                            onChange: async (ev) => {                                
+                                await trigger( 'username' );
+                                setUserNameBorder( errors?.username?.type ? errorStyleBorder : normalStyleBorder );
+                            }
+                        })}/>
+                </div>
+
+                <div className={styles.authErrorDiv}>
+                    {errors?.username?.type === 'required' && <p className={styles.authErrorItem}>{"This field is required"}</p>}
+                    {errors?.username?.type === 'pattern' && <p className={styles.authErrorItem}>{"Invalid username"}</p>}
+                    {errors?.username?.type === 'database' && <p className={styles.authErrorItem}>{"This username is not available"}</p>}
+                    {errors?.username?.type === 'minLength' && <p className={styles.authErrorItem}>{"username too short"}</p>}
+                    {errors?.username?.type === 'maxLength' && <p className={styles.authErrorItem}>{"username too long"}</p>}
+                </div>
+
+                <div>
+                    <label>Email</label>
+                    <input className={styles.authInput} name="email" style={{border: emailBorder}} placeholder="user@email.com" 
+                        {...register("email", 
+                            { 
+                                required: true, 
+                                pattern: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                                onChange: async (ev) => {
+                                    await trigger( 'email' );
+                                    setEmailBorder( errors?.email?.type ? errorStyleBorder : normalStyleBorder );
+                                } 
+                            })}
+                        autoComplete="username"
+                    />
+                </div>
+                
+                <div className={styles.authErrorDiv}>
+                    {errors?.email?.type === 'required' && <p className={styles.authErrorItem}>{"This field is required"}</p>}
+                    {errors?.email?.type === 'pattern' && <p className={styles.authErrorItem}>{"Invalid email address"}</p>}
+                </div>
+
+                <div>
+                    <label>Password</label>
+                    <div style={{position: 'relative'}}>
+                        <div style={ { display: 'block' } }>
+                            <input className={styles.authInput} style={{border: passwordBorder}} name="password"
+                                type={passwordVisible ? 'text' : 'password'}
+                                placeholder="Enter your password"
+                                {...register("password", 
+                                    { required: true, 
+                                        pattern: /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d!@#$%^&*():'"`~|]{8,}$/,
+                                        onChange: async (ev) => {
+                                            await trigger( 'password' );
+                                            setPasswordBorder( errors?.password?.type ? errorStyleBorder : normalStyleBorder );
+                                        }
+                                    })
+                                }
+                                autoComplete="current-password"
+                            />
+                            <FontAwesomeIcon 
+                                onClick={ () => setPasswordVisible(!passwordVisible) } 
+                                icon={passwordVisible ? faEyeSlash : faEye} 
+                                className={styles.authFasIcon}
+                            />
                         </div>
                     </div>
-                    <div>
-                        <input type="checkbox"/> I agree to the <Link href="privacy" passHref legacyBehavior><a target="_blank" rel="noopener noreferrer">Terms of Use</a></Link> and Privacy Policy
+
+                    <div className={styles.authErrorDiv}>
+                        {errors?.password?.type === 'required' && <p className={styles.authErrorItem}>{"This field is required"}</p>}
+                        {errors?.password?.type === 'pattern' && <p className={styles.authErrorItem}>{"Invalid password"}</p>}
+                        {errors?.password?.type === 'minLength' && <p className={styles.authErrorItem}>{"password too short"}</p>}
+                        {errors?.password?.type === 'maxLength' && <p className={styles.authErrorItem}>{"password too long"}</p>}
                     </div>
-                    <div>
-                        <input type="checkbox"/>I want receive newsletter
-                    </div>
-                    <button disabled={!policyAgreement} type="submit">Create Account</button>
-                </form>
+                </div>
+                <div>
+                    <input type="checkbox" onChange={ev=> setPolicyAgreement(ev.target.checked) }/> I agree to the <Link href="privacy" passHref legacyBehavior><a target="_blank" rel="noopener noreferrer">Terms of Use</a></Link> and Privacy Policy
+                </div>
+                <div>
+                    <input type="checkbox"/>I want receive newsletter
+                </div>
+                <div style={{ height: '30px'}}/>
+                <button disabled={!policyAgreement} type="submit">Create Account</button>
             </div>
-        </div>
-    </form>
+        </form>
     );
 };
 
