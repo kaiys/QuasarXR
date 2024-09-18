@@ -1,4 +1,6 @@
 import { SignupFormSchema, SignupFormState, LoginFormState } from '@/app/lib/definitions';
+import { redirect, useRouter } from 'next/navigation';
+import { signIn } from 'next-auth/react';
 
 export async function signup(state: SignupFormState, formData: FormData) {
   // Validate form fields
@@ -47,9 +49,11 @@ export async function signup(state: SignupFormState, formData: FormData) {
 
 export async function login( state: LoginFormState, formData : FormData ) {
   const newState : LoginFormState = {};
+
   try {
     const response = await fetch('/api/login', {
       method: 'POST',
+      redirect: 'follow',
       headers: {
         'Content-Type': 'application/json',
       },
@@ -58,16 +62,24 @@ export async function login( state: LoginFormState, formData : FormData ) {
         password: formData.get('password')
       })
     });
+    const data = await response.json();
 
     if ( !response.ok ) {
-      throw new Error('Login failed');
+      newState.errors = { message : [ 'Login failed' ], email : data.email, password : data.password };
+      console.log('login failed / result:', data, response, newState );
+      return newState;
     }
 
-    const data = await response.json();
-    console.log('login successful / result:', data, response );
+    newState.redirect = '/dashboard';
+
+    console.log('login successful / result:', data, response, newState );
   } catch (error) {
     console.error(error);
-    newState.errors = { message : [ 'Login failed, please try again' ] };
+    newState.errors = { message : [ 'Login failed, fetch api failed' ] };
   }
+
   return newState;
+}
+
+export async function logout() {
 }

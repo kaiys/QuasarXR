@@ -1,11 +1,13 @@
+'use client'
 import React from 'react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useFormState } from 'react-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 import { login } from '@/app/actions/auth';
 import { LoginFormState } from '@/app/lib/definitions';
 import styles from '../styles.module.css';
+import { usePathname, useRouter } from 'next/navigation';
 
 interface Props {
     isLogin : boolean,
@@ -19,9 +21,20 @@ const LoginForm = ({ isLogin, setIsLogin } : Props) => {
     const [passwordVisible, setPasswordVisible] = useState(false);
     const [ emailBorder, setEmailBorder ] = useState(normalBorder);    
     const [ passwordBorder, setPasswordBorder ] = useState(normalBorder);
-
     const initialValue : LoginFormState = { errors: {} }
-    const [state, formAction] = useFormState(login, initialValue);
+    const [state, formAction, isPending ] = useFormState(login, initialValue);
+    const router = useRouter();
+
+    useEffect( () => {
+        console.log( state.redirect );
+        if ( state.redirect ) {
+            // login successful
+            setIsLogin(false);
+            router.push( state.redirect );
+        }
+            
+    }, [ state ] );
+
     const loginRef = React.useRef<HTMLFormElement>(null);
 
     const formStyle : React.CSSProperties = {
@@ -75,7 +88,7 @@ const LoginForm = ({ isLogin, setIsLogin } : Props) => {
                     {errors?.username?.type === 'minLength' && <p style={{margin: '0'}}>{"username too short"}</p>}
                     {errors?.username?.type === 'maxLength' && <p style={{margin: '0'}}>{"username too long"}</p>} */}
                 </div>
-                <button type="submit">LOGIN</button>
+                <button type="submit" disabled={isPending}>LOGIN</button>
             </section>
         </form>
     );

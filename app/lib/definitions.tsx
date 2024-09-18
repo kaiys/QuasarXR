@@ -33,5 +33,10 @@ export type LoginFormState = | {
     email?: string[],
     password?: string[],
     message?: string[],
-  }
+  },
+  redirect? : string,
 } | undefined;
+
+export type SessionPayload = {
+  
+}
