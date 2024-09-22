@@ -6,8 +6,7 @@ import '@fortawesome/fontawesome-svg-core/styles.css';
 import Header from '../components/header/header';
 import '../global.css';
 
-import { SessionProvider } from "next-auth/react";
-
+import { AuthProvider } from './provider'; 
 config.autoAddCss = false;
 
 export const metadata: Metadata = {
@@ -25,11 +24,13 @@ export default function RootLayout( { children } : { children: React.ReactNode }
     return (
       <html lang="en">
         <body style={htmlStyle}>
+          <AuthProvider>
             <Header/>
             <main>
-              <SessionProvider> {children} </SessionProvider>
+              {children} 
             </main>
-            </body>
+          </AuthProvider>
+        </body>
       </html>
     )
   }

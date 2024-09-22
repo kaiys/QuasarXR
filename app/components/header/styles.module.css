@@ -29,3 +29,14 @@
 .content-area {
   padding: 0px 70px;
 }
+
+.auth-text {
+  display: inline-block;
+  padding: 10px 20px;
+  color: black;
+  text-decoration: none;
+  border-radius: 5px;
+  margin-left: 20px;
+  font-size: 13px;
+  user-select: none;
+}
