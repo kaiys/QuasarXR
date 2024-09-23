@@ -7,7 +7,7 @@ import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 import { login } from '@/app/actions/auth';
 import { LoginFormState } from '@/app/lib/definitions';
 import styles from '../styles.module.css';
-import { usePathname, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 
 interface Props {
     isLogin : boolean,
