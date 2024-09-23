@@ -13,7 +13,6 @@ export default function Header() {
     const handleLoginClick = () => setShowLogin(true);
     const handleLogoutClick = () => {
         logout().then( () => {
-            //console.log( 'session deleted' );
         } );
     }
     const { data : session } = useSession();
@@ -25,13 +24,12 @@ export default function Header() {
                 <LoginForm isLogin={showLogin} setIsLogin={setShowLogin}/>
                 
                 <div className={styles['content-area']}>
-                    { session && <div className={styles['auth-text']}> session.user </div> }
-                    { session && <div className={styles['button-link']} onClick={handleLogoutClick}>로그아웃</div> }
-                    { ! session && <div className={styles['button-link']} onClick={handleSignClick}>회원가입</div> }
-                    { ! session && <div className={styles['button-link']} onClick={handleLoginClick}>로그인</div> }
-
+                    { session?.user?.email && <div className={styles['auth-text']}> {session.user.username} </div> }
+                    { session?.user?.email && <div className={styles['button-link']} onClick={handleLogoutClick}>로그아웃</div> }
+                    { ! session?.user?.email && <div className={styles['button-link']} onClick={handleSignClick}>회원가입</div> }
+                    { ! session?.user?.email && <div className={styles['button-link']} onClick={handleLoginClick}>로그인</div> }
                 </div>
-        </div>
+            </div>
         </section>
     )
 }
