@@ -35,24 +35,18 @@ export async function signup(state: SignupFormState, formData: FormData) {
 
 export async function login( state: LoginFormState, formData : FormData ) {
   const newState : LoginFormState = {};
-
   try {
     const $email = formData.get('email');
     const $password = formData.get('password');
-    console.log( $email, $password );
 
-    const result = await signIn("credentials", { rediredct: false, username: $email, password: $password } );
+    const result = await signIn("credentials", { redirect: false, email: $email, password: $password } );
 
-    //if ( ! result.ok ) {
-      //newState.errors = { message : [ 'Login failed' ], email : [ $email.toString() ], password : [ $password.toString() ] };
-      //return newState;
-    //}
-
-    //newState.redirect = '/dashboard';
-
-    //console.log('login successful / result:', result, newState );
+    if ( ! result.ok ) {
+      newState.errors = JSON.parse( result.error );
+      return newState;
+    }
+    newState.redirect = '/';
   } catch (error) {
-    console.error(error);
     newState.errors = { message : [ 'Login failed, fetch api failed' ] };
   }
 
