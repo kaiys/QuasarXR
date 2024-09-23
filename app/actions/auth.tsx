@@ -4,8 +4,7 @@ import { signIn, signOut } from 'next-auth/react';
 
 export async function signup(state: SignupFormState, formData: FormData) {
   // Call the provider or db to create a user...
-
-  const newState : LoginFormState = {};
+  const newState : SignupFormState = {};
   console.log( formData.get('username'), formData.get('email'), formData.get('password') )
   try {
     const response = await fetch('/api/signup', {
@@ -21,14 +20,20 @@ export async function signup(state: SignupFormState, formData: FormData) {
     });
   
     if ( !response.ok ) {
-      console.log( response );
       throw new Error('Signup failed');
-    }  
+    }
+
+    // signup successful
     const data = await response.json();
-    console.log('result:', data);
+    
+    // signin
+    login( {} , formData );
+
+    newState.redirect = '/';
+
   } catch ( err ) {
     console.error(err);
-    newState.errors = { message : [ 'Login failed, please try again' ] };
+    newState.errors = { message : [ 'Signup failed, please try again' ] };
   }
   return newState;
 }

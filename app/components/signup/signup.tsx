@@ -1,12 +1,13 @@
 'use client'
 import React from 'react';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 import { useFormState } from 'react-dom';
 import { signup } from '@/app/actions/auth';
 import { useForm } from 'react-hook-form';
+import { useRouter } from 'next/navigation';
 import styles from '../styles.module.css';
 
 interface Props {
@@ -23,8 +24,16 @@ const SignupForm = ({ isSignedUp, setIsSignedUp } : Props ) => {
     const [usernameBorder, setUserNameBorder ] = useState('1px solid #319cd0');
     const [emailBorder, setEmailBorder ] = useState('1px solid #319cd0');
     const [passwordBorder, setPasswordBorder ] = useState('1px solid #319cd0');
-
     const [state, action] = useFormState( signup, undefined );
+    const router = useRouter();
+
+    useEffect( () => {
+        if ( state?.redirect ) {
+            // signup successful
+            setIsSignedUp(false);
+            router.push( state.redirect );
+        }
+    }, [ state ] );
 
     const { register, handleSubmit, watch, trigger, formState: { errors } } = useForm( { mode: 'onChange' } );
 
